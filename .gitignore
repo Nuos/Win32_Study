@@ -52,3 +52,6 @@ HelloWorld/Debug/vc110.idb
 *.pdb
 *.opensdf
 Win32_Study.sdf
+Debug/Window_Message.ilk
+*.idb
+Window_Message/Debug/Window_Message.log
