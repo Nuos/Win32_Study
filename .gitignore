@@ -41,3 +41,14 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+*.exe
+Debug/HelloWorld.ilk
+Debug/HelloWorld.pdb
+*.tlog
+*.lastbuildstate
+HelloWorld/Debug/HelloWorld.log
+*.obj
+HelloWorld/Debug/vc110.idb
+*.pdb
+*.opensdf
+Win32_Study.sdf
