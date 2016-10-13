@@ -44,7 +44,7 @@ int WINAPI WinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	HWND hwnd = CreateWindow(szWndClassName,
 							 TEXT("The Hello Program"),
-							 WS_OVERLAPPEDWINDOW | WS_VSCROLL,
+							 WS_OVERLAPPEDWINDOW | WS_VSCROLL | WS_HSCROLL,
 							 CW_USEDEFAULT,
 							 CW_USEDEFAULT,
 							 CW_USEDEFAULT,
@@ -78,7 +78,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	TCHAR szBuffer[10];
 	TEXTMETRIC tm;
 
-	static int cyClient, nVscrollPos;
+	static int cxClient, cyClient, nVscrollPos, nMaxWidth;
+	int nVertPos(0), nHorzPos(0), nPaintBeg(0), nPaintEnd(0);
+	SCROLLINFO si;
 
 	switch(message)
 	{
@@ -91,45 +93,111 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		cyChar = tm.tmHeight + tm.tmExternalLeading;
 		ReleaseDC(hWnd, hdc);
 
-		SetScrollRange(hWnd, SB_VERT, 0, NUMLINES - 1, FALSE);
-		SetScrollPos(hWnd, SB_VERT, nVscrollPos, FALSE);
+		/*SetScrollRange(hWnd, SB_VERT, 0, NUMLINES - 1, FALSE);
+		SetScrollPos(hWnd, SB_VERT, nVscrollPos, FALSE);*/
+
+		nMaxWidth = 40 * cxChar + 20 * cxCaps;
 
 		return 0;
 
 	case WM_SIZE:
 		cyClient = HIWORD(lParam);
+		cxClient = LOWORD(lParam);
+
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_RANGE | SIF_PAGE;
+		si.nMin = 0;
+		si.nMax = NUMLINES - 1;
+		si.nPage = cyClient / cyChar;
+		SetScrollInfo(hWnd, SB_VERT, &si, TRUE);
+
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_RANGE | SIF_PAGE;
+		si.nMin = 0;
+		si.nMax = 2 + nMaxWidth / cxChar;
+		si.nPage = cxClient / cxChar;
+		SetScrollInfo(hWnd, SB_HORZ, &si, TRUE);
 
 		return 0;
 
 	case WM_VSCROLL:
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_ALL;
+		GetScrollInfo(hWnd, SB_VERT, &si);
+		nVertPos = si.nPos;
+
 		switch(LOWORD(wParam))
 		{
+		case SB_TOP:
+			si.nPos = si.nMin;
+			break;
+		case SB_BOTTOM:
+			si.nPos = si.nMax;
+			break;
 		case SB_LINEUP:
-			nVscrollPos -= 1;
+			si.nPos -= 1;
 			break;
 		case SB_LINEDOWN:
-			nVscrollPos += 1;
+			si.nPos += 1;
 			break;
 		case SB_PAGEUP:
-			nVscrollPos -= cyClient / cyChar;
+			si.nPos -= si.nPage;
 			break;
 		case SB_PAGEDOWN:
-			nVscrollPos += cyClient / cyChar;
+			si.nPos += si.nPage;
 			break;
 		case SB_THUMBPOSITION:
-			nVscrollPos = HIWORD(wParam);
+			si.nPos = si.nTrackPos;
 			break;
 		default:
 			break;
 		}
-		nVscrollPos = max(0, min(nVscrollPos, NUMLINES - 1));
-		if(nVscrollPos != GetScrollPos(hWnd, SB_VERT))
+		si.fMask = SIF_POS;
+		SetScrollInfo(hWnd, SB_VERT, &si, TRUE);
+		GetScrollInfo(hWnd, SB_VERT, &si);
+		if(si.nPos != nVertPos)
 		{
-			SetScrollPos(hWnd, SB_VERT, nVscrollPos, TRUE);
-			InvalidateRect(hWnd, NULL, TRUE);
+			ScrollWindow(hWnd, 0, cyChar * (nVertPos - si.nPos), NULL, NULL);
+			UpdateWindow(hWnd);
 		}
 
 		return 0;
+
+	case WM_HSCROLL:
+		si.cbSize = sizeof (si) ;
+		si.fMask  = SIF_ALL ;
+		GetScrollInfo (hWnd, SB_HORZ, &si) ;
+		nHorzPos = si.nPos ;
+		switch (LOWORD (wParam))
+		{
+		case   SB_LINELEFT:
+			si.nPos -= 1 ;
+			break ;
+		case   SB_LINERIGHT:
+			si.nPos += 1 ;
+			break ;
+		case   SB_PAGELEFT:
+			si.nPos -= si.nPage ;
+			break ;
+		case   SB_PAGERIGHT:
+			si.nPos += si.nPage ;
+			break ;
+		case   SB_THUMBPOSITION:
+			si.nPos = si.nTrackPos ;
+			break ;
+		default :
+			break ;
+		}
+		si.fMask = SIF_POS ;
+		SetScrollInfo (hWnd, SB_HORZ, &si, TRUE) ;
+		GetScrollInfo (hWnd, SB_HORZ, &si) ;
+		if (si.nPos != nHorzPos)
+		{
+			ScrollWindow (hWnd, cxChar * (nHorzPos - si.nPos), 0,
+				NULL, NULL) ;
+		}
+
+		return 0 ;
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
