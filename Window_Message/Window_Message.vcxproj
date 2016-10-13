@@ -78,6 +78,9 @@
   <ItemGroup>
     <ClCompile Include="HelloWin.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SysMetrics.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

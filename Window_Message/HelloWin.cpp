@@ -14,6 +14,7 @@
 */
 
 #include <windows.h>
+#include "SysMetrics.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -43,7 +44,7 @@ int WINAPI WinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	HWND hwnd = CreateWindow(szWndClassName,
 							 TEXT("The Hello Program"),
-							 WS_OVERLAPPEDWINDOW,
+							 WS_OVERLAPPEDWINDOW | WS_VSCROLL,
 							 CW_USEDEFAULT,
 							 CW_USEDEFAULT,
 							 CW_USEDEFAULT,
@@ -71,18 +72,78 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	RECT rect;
+	//RECT rect;
+
+	static int cxChar, cxCaps, cyChar;
+	TCHAR szBuffer[10];
+	TEXTMETRIC tm;
+
+	static int cyClient, nVscrollPos;
 
 	switch(message)
 	{
 	case WM_CREATE:
-		PlaySound(TEXT("hellowin.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		//PlaySound(TEXT("hellowin.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		hdc = GetDC(hWnd);
+		GetTextMetrics(hdc, &tm);
+		cxChar = tm.tmAveCharWidth;
+		cxCaps = (tm.tmPitchAndFamily & 1 ? 3 : 2) * cxChar / 2;
+		cyChar = tm.tmHeight + tm.tmExternalLeading;
+		ReleaseDC(hWnd, hdc);
+
+		SetScrollRange(hWnd, SB_VERT, 0, NUMLINES - 1, FALSE);
+		SetScrollPos(hWnd, SB_VERT, nVscrollPos, FALSE);
+
+		return 0;
+
+	case WM_SIZE:
+		cyClient = HIWORD(lParam);
+
+		return 0;
+
+	case WM_VSCROLL:
+		switch(LOWORD(wParam))
+		{
+		case SB_LINEUP:
+			nVscrollPos -= 1;
+			break;
+		case SB_LINEDOWN:
+			nVscrollPos += 1;
+			break;
+		case SB_PAGEUP:
+			nVscrollPos -= cyClient / cyChar;
+			break;
+		case SB_PAGEDOWN:
+			nVscrollPos += cyClient / cyChar;
+			break;
+		case SB_THUMBPOSITION:
+			nVscrollPos = HIWORD(wParam);
+			break;
+		default:
+			break;
+		}
+		nVscrollPos = max(0, min(nVscrollPos, NUMLINES - 1));
+		if(nVscrollPos != GetScrollPos(hWnd, SB_VERT))
+		{
+			SetScrollPos(hWnd, SB_VERT, nVscrollPos, TRUE);
+			InvalidateRect(hWnd, NULL, TRUE);
+		}
+
 		return 0;
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		GetClientRect(hWnd, &rect);
-		DrawText(hdc, TEXT("Hello Windows"), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+		/*GetClientRect(hWnd, &rect);
+		DrawText(hdc, TEXT("Hello Windows"), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);*/
+		for(int  i = 0; i < NUMLINES; ++i)
+		{
+			int y = cyChar * (i - nVscrollPos);
+			TextOut(hdc, 0, y, sysmetrics[i].szLabel, lstrlen(sysmetrics[i].szLabel));
+			TextOut(hdc, 22 * cxCaps, y, sysmetrics[i].szDesc, lstrlen(sysmetrics[i].szDesc));
+			SetTextAlign(hdc, TA_RIGHT | TA_TOP);
+			TextOut(hdc, 22 * cxCaps + 40 * cxChar, y, szBuffer, wsprintf(szBuffer, TEXT("%5d"), GetSystemMetrics(sysmetrics[i].Index)));
+			SetTextAlign(hdc, TA_LEFT | TA_TOP);
+		}
 		EndPaint(hWnd, &ps);
 		return 0;
 
