@@ -72,7 +72,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	//RECT rect;
 
 	static int cxChar, cxCaps, cyChar;
 	TCHAR szBuffer[10];
@@ -85,16 +84,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch(message)
 	{
 	case WM_CREATE:
-		//PlaySound(TEXT("hellowin.wav"), NULL, SND_FILENAME | SND_ASYNC);
 		hdc = GetDC(hWnd);
 		GetTextMetrics(hdc, &tm);
 		cxChar = tm.tmAveCharWidth;
 		cxCaps = (tm.tmPitchAndFamily & 1 ? 3 : 2) * cxChar / 2;
 		cyChar = tm.tmHeight + tm.tmExternalLeading;
 		ReleaseDC(hWnd, hdc);
-
-		/*SetScrollRange(hWnd, SB_VERT, 0, NUMLINES - 1, FALSE);
-		SetScrollPos(hWnd, SB_VERT, nVscrollPos, FALSE);*/
 
 		nMaxWidth = 40 * cxChar + 20 * cxCaps;
 
@@ -201,15 +196,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		/*GetClientRect(hWnd, &rect);
-		DrawText(hdc, TEXT("Hello Windows"), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);*/
-		for(int  i = 0; i < NUMLINES; ++i)
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_POS;
+		GetScrollInfo(hWnd, SB_VERT, &si);
+		nVertPos = si.nPos;
+		GetScrollInfo(hWnd, SB_HORZ, &si);
+		nHorzPos = si.nPos;
+		nPaintBeg = max(0, nVertPos + ps.rcPaint.top / cyChar);
+		nPaintEnd = min(NUMLINES - 1, nVertPos + ps.rcPaint.bottom / cyChar);
+
+		for(int i = nPaintBeg; i <= nPaintEnd; ++i)
 		{
-			int y = cyChar * (i - nVscrollPos);
-			TextOut(hdc, 0, y, sysmetrics[i].szLabel, lstrlen(sysmetrics[i].szLabel));
-			TextOut(hdc, 22 * cxCaps, y, sysmetrics[i].szDesc, lstrlen(sysmetrics[i].szDesc));
+			int x = cxChar * ( 1 - nHorzPos);
+			int y = cyChar * (i - nVertPos);
+
+			TextOut(hdc, x, y, sysmetrics[i].szLabel, lstrlen(sysmetrics[i].szLabel));
+			TextOut(hdc, x + 22 * cxCaps, y, sysmetrics[i].szDesc, lstrlen(sysmetrics[i].szDesc));
 			SetTextAlign(hdc, TA_RIGHT | TA_TOP);
-			TextOut(hdc, 22 * cxCaps + 40 * cxChar, y, szBuffer, wsprintf(szBuffer, TEXT("%5d"), GetSystemMetrics(sysmetrics[i].Index)));
+			TextOut(hdc, x + 22 * cxCaps + 40 * cxChar, y, szBuffer, wsprintf(szBuffer, TEXT("%5d"), GetSystemMetrics(sysmetrics[i].Index)));
 			SetTextAlign(hdc, TA_LEFT | TA_TOP);
 		}
 		EndPaint(hWnd, &ps);

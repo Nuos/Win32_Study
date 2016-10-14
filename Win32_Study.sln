@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloWorld", "HelloWorld\He
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Window_Message", "Window_Message\Window_Message.vcxproj", "{58BEB1BA-85EF-430B-9ABC-C64197D02B5D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DrawLine", "DrawLine\DrawLine.vcxproj", "{5CA5A8F6-7FDD-4A48-86BC-48D9D4DA6A97}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{58BEB1BA-85EF-430B-9ABC-C64197D02B5D}.Debug|Win32.Build.0 = Debug|Win32
 		{58BEB1BA-85EF-430B-9ABC-C64197D02B5D}.Release|Win32.ActiveCfg = Release|Win32
 		{58BEB1BA-85EF-430B-9ABC-C64197D02B5D}.Release|Win32.Build.0 = Release|Win32
+		{5CA5A8F6-7FDD-4A48-86BC-48D9D4DA6A97}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5CA5A8F6-7FDD-4A48-86BC-48D9D4DA6A97}.Debug|Win32.Build.0 = Debug|Win32
+		{5CA5A8F6-7FDD-4A48-86BC-48D9D4DA6A97}.Release|Win32.ActiveCfg = Release|Win32
+		{5CA5A8F6-7FDD-4A48-86BC-48D9D4DA6A97}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
