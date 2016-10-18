@@ -194,6 +194,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		return 0 ;
 
+	case WM_KEYDOWN:
+		switch(wParam)
+		{
+		case VK_HOME:
+			SendMessage(hWnd, WM_VSCROLL, SB_TOP, 0);
+			break;
+		case VK_END:
+			SendMessage(hWnd, WM_VSCROLL, SB_BOTTOM, 0);
+			break;
+		case VK_PRIOR:
+			SendMessage(hWnd, WM_VSCROLL, SB_PAGEUP, 0);
+			break;
+		case VK_NEXT:
+			SendMessage(hWnd, WM_VSCROLL, SB_PAGEDOWN, 0);
+			break;
+		case VK_UP:
+			SendMessage(hWnd, WM_VSCROLL, SB_LINEUP, 0);
+			break;
+		case VK_DOWN:
+			SendMessage(hWnd, WM_VSCROLL, SB_LINEDOWN, 0);
+			break;
+		case VK_LEFT:
+			SendMessage(hWnd, WM_HSCROLL, SB_PAGELEFT, 0);
+			break;
+		case VK_RIGHT:
+			SendMessage(hWnd, WM_HSCROLL, SB_PAGERIGHT, 0);
+			break;
+
+		}
+		return 0;
+
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		si.cbSize = sizeof(si);
